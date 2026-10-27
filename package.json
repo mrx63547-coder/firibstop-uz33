@@ -1,0 +1,25 @@
+{
+  "name": "firibstop-uz-offline-shield",
+  "version": "3.0.0",
+  "private": true,
+  "description": "FiribStop UZ — privacy-first anti-scam PWA with safe URL analysis, training, offline mode, and optional consent-based cloud sync",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test tests/*.test.js",
+    "lint:check": "node --check server.js && node --check app.js && node --check link-checker.js && node --check radar-dashboard.js && node --check runtime.js && node --check news-feed.js && node --check cloudflare-threats.js && node --check assetlinks.js && node --check netlify/functions/news.js && node --check netlify/functions/health.js && node --check netlify/functions/radar-data.js && node --check netlify/functions/site-security-events.js && node --check netlify/functions/assetlinks.js",
+    "check": "npm run lint:check && npm test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "cybersecurity",
+    "uzbekistan",
+    "phishing",
+    "scam-prevention",
+    "pwa",
+    "offline",
+    "digital-hygiene"
+  ],
+  "license": "MIT"
+}

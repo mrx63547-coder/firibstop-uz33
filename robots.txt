@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://firibstopuz.netlify.app/sitemap.xml
