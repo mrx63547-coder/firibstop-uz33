@@ -1,0 +1,72 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install Capacitor
+        run: npm install --no-save --no-package-lock @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+
+      - name: Prepare web files
+        run: |
+          rm -rf www && mkdir www
+          for f in *.html *.css *.js *.json *.webmanifest *.png *.svg; do
+            [ -f "$f" ] || continue
+            case "$f" in
+              server.js|news-feed.js|cloudflare-threats.js|assetlinks.js|package.json|package-lock.json|capacitor.config.json|known_apk_hashes.template.json) continue ;;
+            esac
+            cp "$f" www/
+          done
+          for d in data js css assets; do [ -d "$d" ] && cp -r "$d" www/ || true; done
+          if ! grep -q native-api.js www/index.html; then
+            sed -i 's#</head>#<script src="native-api.js"></script></head>#' www/index.html
+          fi
+          grep -c native-api.js www/index.html
+          ls www
+
+      - name: Capacitor config
+        run: |
+          [ -f capacitor.config.json ] || npx cap init FiribStop uz.firibstop.app --web-dir www
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Launcher icons
+        continue-on-error: true
+        run: |
+          pip install pillow
+          python3 scripts/make-android-icons.py
+
+      - name: Sync web files into Android project
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Collect APK
+        run: |
+          mkdir -p build-out
+          cp android/app/build/outputs/apk/debug/app-debug.apk build-out/FiribStop.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FiribStop-apk
+          path: build-out/FiribStop.apk
+          if-no-files-found: error
